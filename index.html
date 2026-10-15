@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Turn your ideas into engaging social media captions with AI. Tailored for Instagram, LinkedIn, X, Facebook, and YouTube in English, Tamil, and Tanglish.">
+  <meta name="theme-color" content="#ef4444">
+  <title>AI Social Media Caption Generator</title>
+  
+  <!-- Modern Google Fonts: Plus Jakarta Sans, Outfit, Playfair Display, Fira Code, Caveat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fira+Code:wght@400;600&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 3D Immersive Futuristic Scene -->
+  <div class="bg-3d-scene" aria-hidden="true">
+    <canvas id="bg3dCanvas" class="bg-3d-canvas"></canvas>
+    <div class="cyber-grid-floor"></div>
+    <div class="bg-3d-orb orb-1"></div>
+    <div class="bg-3d-orb orb-2"></div>
+    <div class="bg-3d-orb orb-3"></div>
+    <div class="bg-3d-vignette"></div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="app-wrapper">
+    <!-- Navbar / Header -->
+    <header class="app-header">
+      <div class="header-container">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" fill="url(#brandGrad)" />
+              <path d="M19 16L20.2 18.8L23 20L20.2 21.2L19 24L17.8 21.2L15 20L17.8 18.8L19 16Z" fill="url(#brandGrad)" />
+              <defs>
+                <linearGradient id="brandGrad" x1="4" y1="2" x2="23" y2="24" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#F87171" />
+                  <stop offset="0.5" stop-color="#EF4444" />
+                  <stop offset="1" stop-color="#DC2626" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="brand-name">CaptionCraft AI</span>
+        </div>
+        
+        <div class="header-status">
+          <button type="button" id="btnMobileConnect" class="btn-mobile-connect" title="Open on any Mobile phone or Lab PC on the same Wi-Fi">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <span>📱 Mobile &amp; Lab</span>
+          </button>
+          <div id="apiStatusBadge" class="status-badge status-checking" title="Checking server and API key status">
+            <span class="status-dot"></span>
+            <span id="apiStatusText">Connecting...</span>
+          </div>
+          <span class="badge-tag">Claude</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="main-content">
+      <!-- Page 1: Generator Studio View (Includes Hero, Token Monitor, and Form) -->
+      <div id="viewGenerator" class="app-view active-view">
+        <section class="hero-section">
+          <h1 class="hero-title">AI Social Media Caption Generator</h1>
+          <p class="hero-subtitle">Turn your ideas into engaging social media captions with AI.</p>
+        </section>
+
+        <!-- Token Usage & $5 Credit Dashboard Bar -->
+        <section class="card token-dashboard-card" aria-label="API Credit and Token Monitor">
+          <div class="token-dashboard-header">
+            <div class="token-header-title">
+              <span class="token-header-icon">💳</span>
+              <div>
+                <div class="token-title-row">
+                  <h3 class="token-title">API Credit &amp; Token Dashboard</h3>
+                  <span class="credit-badge">$5.00 Credit</span>
+                </div>
+                <p class="token-subtitle">Live Anthropic Claude balance • Automatically deducts token cost per caption</p>
+              </div>
+            </div>
+            <div class="token-header-actions">
+              <span id="tokenModelBadge" class="token-model-badge">Model: claude-haiku-4-5</span>
+              <button type="button" id="resetTokensBtn" class="btn-text token-reset-btn" title="Refill credit back to $5.00">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                Reset to $5.00
+              </button>
+            </div>
+          </div>
+
+          <!-- Budget Visual Meter -->
+          <div class="balance-meter-container">
+            <div class="balance-meter-header">
+              <div class="balance-meter-title">
+                <span class="balance-label">Remaining Balance:</span>
+                <span id="remainingBalanceHero" class="balance-hero-val">$5.0000</span>
+                <span class="balance-initial-note">/ $5.0000</span>
+              </div>
+              <div class="balance-meter-stats">
+                <span class="spent-badge">Spent: <strong id="totalCostVal">$0.0000</strong></span>
+                <span id="balancePercentText" class="percent-badge">100% Left</span>
+              </div>
+            </div>
+            <div class="balance-progress-track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+              <div id="balanceProgressFill" class="balance-progress-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="token-stats-grid">
+            <!-- Stat 1: Remaining Credit -->
+            <div class="token-stat-item stat-balance">
+              <div class="token-stat-icon">💵</div>
+              <div class="token-stat-info">
+                <span class="token-stat-label">Current Balance</span>
+                <span id="remainingBalanceVal" class="token-stat-value text-success">$5.0000</span>
+                <span id="balanceStatusHelper" class="token-stat-helper">Full credit available</span>
+              </div>
+            </div>
+
+            <!-- Stat 2: Total Tokens Used -->
+            <div class="token-stat-item stat-total">
+              <div class="token-stat-icon">🪙</div>
+              <div class="token-stat-info">
+                <span class="token-stat-label">Total Tokens Used</span>
+                <span id="totalTokensVal" class="token-stat-value">0</span>
+                <span id="totalTokensHelper" class="token-stat-helper">Prompt + Completion</span>
+              </div>
+            </div>
+
+            <!-- Stat 3: Input & Output Breakdown -->
+            <div class="token-stat-item stat-tokens">
+              <div class="token-stat-icon">📊</div>
+              <div class="token-stat-info">
+                <span class="token-stat-label">Tokens Breakdown</span>
+                <div class="token-split-row">
+                  <span class="token-split-item">📥 <strong id="inputTokensVal">0</strong> in</span>
+                  <span class="token-split-sep">•</span>
+                  <span class="token-split-item">📤 <strong id="outputTokensVal">0</strong> out</span>
+                </div>
+                <span class="token-stat-helper">$0.80 / $4.00 per 1M</span>
+              </div>
+            </div>
+
+            <!-- Stat 4: Last Request Usage -->
+            <div class="token-stat-item stat-last">
+              <div class="token-stat-icon">⚡</div>
+              <div class="token-stat-info">
+                <span class="token-stat-label">Last Call Cost</span>
+                <span id="lastRequestTokensVal" class="token-stat-value">—</span>
+                <span id="lastRequestHelper" class="token-stat-helper">Awaiting generation</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Caption Preferences Form Card -->
+        <section class="card form-card" aria-labelledby="formHeading">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h2 id="formHeading" class="card-title">Caption Preferences</h2>
+              <p class="card-desc">Configure your audience, tone, language, and upload a photo or video.</p>
+            </div>
+            <button type="button" id="resetBtn" class="btn-text" title="Reset all fields to defaults">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              Reset Form
+            </button>
+          </div>
+
+          <form id="captionForm" novalidate>
+            <!-- Media Upload Section (Photo & Video) -->
+            <div class="form-group image-upload-group">
+              <div class="label-row">
+                <label class="form-label" for="imageInput">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                  Upload Photo or Video
+                  <span class="optional-pill">AI Vision &amp; Reels</span>
+                </label>
+                <span id="imageStatusHint" class="char-count">Optional photo or video clip</span>
+              </div>
+
+              <!-- Drag & Drop Zone -->
+              <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Upload photo or video to generate captions">
+                <input type="file" id="imageInput" accept="image/*,video/*" class="file-input-hidden" tabindex="-1">
+                
+                <div id="dropZonePrompt" class="drop-zone-prompt">
+                  <div class="upload-icon-circle">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  </div>
+                  <div class="upload-text-group">
+                    <span class="upload-main-text"><strong>Click to upload</strong> or drag &amp; drop photo or video</span>
+                    <span class="upload-sub-text">Photos (JPG, PNG, WEBP) or Videos (MP4, WEBM, MOV)</span>
+                  </div>
+                  <div class="upload-pills-row">
+                    <span class="upload-badge-pill">📸 Photo Analysis</span>
+                    <span class="upload-badge-pill">🎬 Video Reel/Shorts Analyzer</span>
+                  </div>
+                </div>
+
+                <!-- Preview Container (Photo or Video) -->
+                <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                  <!-- Image Preview -->
+                  <img id="imagePreviewThumb" class="image-preview-thumb" alt="Uploaded photo preview" style="display: none;">
+                  
+                  <!-- Video Preview Player -->
+                  <div id="videoPreviewWrapper" class="video-preview-wrapper" style="display: none;">
+                    <video id="videoPreviewPlayer" class="video-preview-player" controls playsinline muted></video>
+                  </div>
+
+                  <div class="image-preview-meta">
+                    <div class="media-title-row">
+                      <span id="mediaTypeBadge" class="media-type-pill">📸 Photo</span>
+                      <span id="imageFileName" class="image-filename">media-file</span>
+                    </div>
+                    <div class="media-sub-meta">
+                      <span id="imageFileSize" class="image-filesize">0 KB</span>
+                      <span id="videoDurationBadge" class="video-duration-pill" style="display: none;">⏱️ 0:00</span>
+                      <span id="videoFrameBadge" class="video-frame-pill" style="display: none;">✨ Keyframe Extracted</span>
+                    </div>
+                  </div>
+                  <button type="button" id="removeImageBtn" class="btn-remove-image" title="Remove media" aria-label="Remove uploaded media">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Topic / Description -->
+            <div class="form-group">
+              <div class="label-row">
+                <label for="topicInput" class="form-label">
+                  <span id="topicLabelText">Topic or Video Description</span>
+                  <span id="topicRequiredStar" class="required-star">*</span>
+                </label>
+                <span id="charCount" class="char-count">0 / 500</span>
+              </div>
+              <textarea 
+                id="topicInput" 
+                name="topic" 
+                rows="3" 
+                class="form-textarea" 
+                maxlength="500"
+                placeholder="Example: Epic match victory celebration with friends, high energy stadium vibes, confetti falling..."
+              ></textarea>
+              <div id="topicError" class="field-error" aria-live="polite"></div>
+
+              <!-- Quick Inspiration Chips -->
+              <div class="quick-chips-wrapper">
+                <span class="chips-label">Try an idea:</span>
+                <div class="chips-list">
+                  <button type="button" class="chip-btn" data-prompt="A beautiful sunset at Marina Beach with golden skies and cool sea breeze.">🌅 Marina Beach Sunset</button>
+                  <button type="button" class="chip-btn" data-prompt="Behind-the-scenes video of building our AI full-stack project in college!">🎬 Behind The Scenes</button>
+                  <button type="button" class="chip-btn" data-prompt="Winning first prize at the college hackathon after 24 hours of non-stop coding!">🏆 Hackathon Winner</button>
+                  <button type="button" class="chip-btn" data-prompt="Fresh morning filter coffee and stepping into a productive Monday coding session.">☕ Filter Coffee Monday</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Controls Grid -->
+            <div class="form-grid">
+              <!-- Platform -->
+              <div class="form-group">
+                <label for="platformSelect" class="form-label">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                  Social Media Platform
+                </label>
+                <div class="select-wrapper">
+                  <select id="platformSelect" name="platform" class="form-select" required>
+                    <option value="Instagram" selected>📸 Instagram (Reels &amp; Posts)</option>
+                    <option value="Facebook">📘 Facebook</option>
+                    <option value="LinkedIn">💼 LinkedIn</option>
+                    <option value="X (Twitter)">🐦 X (Twitter)</option>
+                    <option value="YouTube">▶️ YouTube (Shorts &amp; Videos)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Tone -->
+              <div class="form-group">
+                <label for="toneSelect" class="form-label">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <line x1="9" y1="9" x2="9.01" y2="9"/>
+                    <line x1="15" y1="9" x2="15.01" y2="9"/>
+                  </svg>
+                  Caption Tone
+                </label>
+                <div class="select-wrapper">
+                  <select id="toneSelect" name="tone" class="form-select" required>
+                    <option value="Inspirational" selected>✨ Inspirational</option>
+                    <option value="Funny">😂 Funny</option>
+                    <option value="Professional">💼 Professional</option>
+                    <option value="Friendly">😊 Friendly</option>
+                    <option value="Emotional">❤️ Emotional</option>
+                    <option value="Casual">👟 Casual</option>
+                    <option value="Promotional">🔥 Promotional</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Language -->
+              <div class="form-group">
+                <label for="languageSelect" class="form-label">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m5 8 6 6"/>
+                    <path d="m4 14 6-6 2-3"/>
+                    <path d="M2 5h12"/>
+                    <path d="M7 2h1"/>
+                    <path d="m22 22-5-10-5 10"/>
+                    <path d="M14 18h6"/>
+                  </svg>
+                  Language
+                </label>
+                <div class="select-wrapper">
+                  <select id="languageSelect" name="language" class="form-select" required>
+                    <option value="English" selected>English</option>
+                    <option value="Tamil">Tamil (தமிழ்)</option>
+                    <option value="Tanglish">Tanglish (Tamil in English letters)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Length -->
+              <div class="form-group">
+                <label for="lengthSelect" class="form-label">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="21" y1="10" x2="3" y2="10"/>
+                    <line x1="21" y1="6" x2="3" y2="6"/>
+                    <line x1="21" y1="14" x2="3" y2="14"/>
+                    <line x1="21" y1="18" x2="7" y2="18"/>
+                  </svg>
+                  Caption Length
+                </label>
+                <div class="select-wrapper">
+                  <select id="lengthSelect" name="length" class="form-select" required>
+                    <option value="Short">⚡ Short (1–2 punchy lines)</option>
+                    <option value="Medium" selected>📝 Medium (Engaging 3–5 lines)</option>
+                    <option value="Long">📖 Long (In-depth storytelling)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Caption Font Style -->
+              <div class="form-group font-style-form-group">
+                <label for="fontSelect" class="form-label">
+                  <svg class="label-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                  </svg>
+                  Caption Font Style
+                  <span class="optional-pill">Custom Typography</span>
+                </label>
+                <div class="select-wrapper">
+                  <select id="fontSelect" name="fontStyle" class="form-select">
+                    <option value="modern" selected>Modern Clean (Plus Jakarta Sans)</option>
+                    <option value="bold-impact">Bold Impact (Outfit Bold)</option>
+                    <option value="elegant">Elegant Serif (Playfair Display)</option>
+                    <option value="cyber-mono">Cyber Tech (Fira Code Mono)</option>
+                    <option value="handwritten">Creative Handwritten (Caveat Script)</option>
+                    <option value="unicode-bold">Social Media 𝗕𝗼𝗹𝗱 (Copy directly)</option>
+                    <option value="unicode-italic">Social Media 𝘐𝘵𝘢𝘭𝘪𝘤 (Copy directly)</option>
+                    <option value="unicode-script">Social Media 𝓒𝓾𝓻𝓼𝓲𝓿𝓮 (Copy directly)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hashtag Toggle -->
+            <div class="form-group">
+              <label class="form-label">Hashtags</label>
+              <div class="radio-pill-group" role="radiogroup" aria-label="Include hashtags">
+                <label class="radio-pill-label">
+                  <input type="radio" name="includeHashtags" value="true" checked>
+                  <span class="pill-content">
+                    <span class="pill-hash">#</span>
+                    Include hashtags
+                  </span>
+                </label>
+                <label class="radio-pill-label">
+                  <input type="radio" name="includeHashtags" value="false">
+                  <span class="pill-content">
+                    <span class="pill-none">✕</span>
+                    Do not include hashtags
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Global Error Banner -->
+            <div id="formErrorBanner" class="alert-banner alert-error" style="display: none;" role="alert">
+              <div class="alert-icon">⚠️</div>
+              <div class="alert-text" id="formErrorText"></div>
+            </div>
+
+            <!-- Submit Button (Go to Next Page) -->
+            <div class="form-actions">
+              <button type="submit" id="generateBtn" class="btn btn-primary btn-generate-hero">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span class="btn-text-content">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z"/>
+                  </svg>
+                  Generate 3 Captions (Go to Next Page) →
+                </span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Educational Collapsible: Full-Stack Architecture Guide -->
+        <section class="card guide-card">
+          <details class="guide-accordion">
+            <summary class="guide-summary">
+              <div class="summary-title-group">
+                <span class="guide-icon">💡</span>
+                <div>
+                  <strong>Student Full-Stack Architecture &amp; API Guide</strong>
+                  <p class="guide-subtext">Click to explore the request lifecycle, security, and prompt engineering.</p>
+                </div>
+              </div>
+              <span class="accordion-arrow">▼</span>
+            </summary>
+            <div class="guide-content">
+              <div class="guide-grid">
+                <div class="guide-item">
+                  <h4>1. Client-Side Input &amp; Validation</h4>
+                  <p>The form sanitizes inputs, enforces length boundaries (3–500 chars), and dispatches an asynchronous <code>POST /api/generate-captions</code> JSON request using the browser's native Fetch API.</p>
+                </div>
+                <div class="guide-item">
+                  <h4>2. Express REST API &amp; Security</h4>
+                  <p>The Node/Express backend verifies allowed dropdown values, applies IP rate-limiting, and ensures the secret <code>ANTHROPIC_API_KEY</code> is never exposed to the client or browser.</p>
+                </div>
+                <div class="guide-item">
+                  <h4>3. Prompt Engineering &amp; Claude</h4>
+                  <p>A specialized system prompt directs Claude to return structured JSON containing 3 distinct caption strategies (Hook &amp; Story, Direct, and Engagement) tailored for the requested platform and language.</p>
+                </div>
+                <div class="guide-item">
+                  <h4>4. Clipboard &amp; Regeneration</h4>
+                  <p>The UI leverages the modern Clipboard API with toast feedback, and permits individual card re-prompting via <code>POST /api/regenerate-caption</code> without re-generating all cards.</p>
+                </div>
+              </div>
+            </div>
+          </details>
+        </section>
+      </div><!-- End #viewGenerator (Page 1) -->
+
+      <!-- Page 2: Dedicated Results View (Next Page) -->
+      <div id="viewResults" class="app-view" style="display: none;">
+        <!-- Results Top Navigation Bar -->
+        <div class="results-nav-bar">
+          <button type="button" id="btnBackToGenerator" class="btn-nav-back" title="Return to generator to tweak preferences">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            ← Back to Generator
+          </button>
+          
+          <div class="results-page-heading">
+            <h2 class="results-page-title">🎉 Generated Social Media Captions</h2>
+            <p id="resultsSubtitle" class="results-page-subtitle">3 creative AI variations generated for your post</p>
+          </div>
+
+          <div class="results-nav-actions">
+            <button type="button" id="btnNewCaption" class="btn-text" title="Start a fresh caption request">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              New Post
+            </button>
+            <button type="button" id="copyAllBtn" class="btn btn-secondary-sm" title="Copy all 3 captions to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy All Captions
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Grid Layout (Summary Sidebar + Caption Cards) -->
+        <div class="results-page-grid">
+          
+          <!-- Left Column: Post & Media Summary Card -->
+          <aside class="results-summary-sidebar">
+            <div class="card results-summary-card">
+              <div class="summary-card-header">
+                <span class="summary-icon">📋</span>
+                <h3 class="summary-title">Post Summary</h3>
+              </div>
+
+              <!-- Media Preview Display -->
+              <div id="summaryMediaContainer" class="summary-media-container">
+                <div id="summaryVideoWrap" class="summary-media-wrap" style="display: none;">
+                  <video id="summaryVideoPlayer" class="summary-video-player" controls playsinline></video>
+                </div>
+                <div id="summaryImageWrap" class="summary-media-wrap" style="display: none;">
+                  <img id="summaryImageThumb" class="summary-image-thumb" alt="Uploaded media preview">
+                </div>
+                <div id="summaryEmptyMedia" class="summary-media-wrap summary-empty-media">
+                  <span class="summary-empty-icon">📝</span>
+                  <span>Text-only caption prompt</span>
+                </div>
+              </div>
+
+              <!-- Prompt Snippet -->
+              <div class="summary-info-section">
+                <span class="summary-label">Topic / Context</span>
+                <p id="summaryPromptText" class="summary-prompt-text">—</p>
+              </div>
+
+              <!-- Tags / Parameters -->
+              <div class="summary-info-section">
+                <span class="summary-label">Target Audience &amp; Settings</span>
+                <div class="summary-pills-list">
+                  <span id="summaryPlatformBadge" class="summary-pill">📸 Instagram</span>
+                  <span id="summaryToneBadge" class="summary-pill">✨ Inspirational</span>
+                  <span id="summaryLangBadge" class="summary-pill">English</span>
+                  <span id="summaryLengthBadge" class="summary-pill">Medium</span>
+                  <span id="summaryFontBadge" class="summary-pill">🔤 Modern Clean</span>
+                  <span id="summaryHashBadge" class="summary-pill"># Hashtags</span>
+                </div>
+              </div>
+
+              <!-- Quick Edit Button -->
+              <button type="button" id="btnEditInputs" class="btn-edit-inputs">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Preferences
+              </button>
+            </div>
+          </aside>
+
+          <!-- Right Column: 3 Generated Captions Showcase -->
+          <section class="results-captions-main" aria-label="Generated Captions List">
+            <!-- Empty state fallback if visited directly without captions -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+              <div class="empty-icon-wrapper">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <path d="M8 10h.01"/>
+                  <path d="M12 10h.01"/>
+                  <path d="M16 10h.01"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No captions generated yet</h3>
+              <p class="empty-desc">Head over to the generator to craft your first set of captions.</p>
+              <button type="button" id="emptyStateBackBtn" class="btn btn-primary" style="margin-top: 1rem;">
+                ← Go to Generator
+              </button>
+            </div>
+
+            <!-- Interactive Font Style Switcher Toolbar -->
+            <div class="results-font-toolbar" aria-label="Caption Typography Switcher">
+              <div class="font-toolbar-header">
+                <div class="font-toolbar-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                  </svg>
+                  <span>Select Caption Font Style:</span>
+                </div>
+                <span class="font-toolbar-hint">Instant live preview • Unicode fonts copy directly to Instagram/X</span>
+              </div>
+              <div class="font-chips-bar" id="fontChipsBar">
+                <button type="button" class="font-chip-btn active" data-font="modern">Modern Clean</button>
+                <button type="button" class="font-chip-btn" data-font="bold-impact">Bold Impact</button>
+                <button type="button" class="font-chip-btn" data-font="elegant">Elegant Serif</button>
+                <button type="button" class="font-chip-btn" data-font="cyber-mono">Cyber Mono</button>
+                <button type="button" class="font-chip-btn" data-font="handwritten">Handwritten</button>
+                <button type="button" class="font-chip-btn font-chip-social" data-font="unicode-bold" title="Social Media Bold (copyable)">𝗕𝗼𝗹𝗱</button>
+                <button type="button" class="font-chip-btn font-chip-social" data-font="unicode-italic" title="Social Media Italic (copyable)">𝘐𝘵𝘢𝘭𝘪𝘤</button>
+                <button type="button" class="font-chip-btn font-chip-social" data-font="unicode-script" title="Social Media Cursive Script (copyable)">𝓒𝓾𝓻𝓼𝓲𝓿𝓮</button>
+              </div>
+            </div>
+
+            <!-- Dynamic Caption Cards injected here by script.js -->
+            <div id="captionCardsContainer" class="caption-cards-container">
+              <!-- Rendered cards -->
+            </div>
+
+            <!-- Bottom Return Bar -->
+            <div class="results-bottom-bar">
+              <button type="button" id="btnBackBottom" class="btn btn-secondary">
+                ← Back to Generator to Edit
+              </button>
+              <button type="button" id="btnNewCaptionBottom" class="btn btn-primary">
+                + Create Another Caption
+              </button>
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- Generation Fullscreen / Overlay Loading Screen -->
+      <div id="generationOverlay" class="generation-overlay" style="display: none;" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="generation-modal">
+          <div class="generation-spinner-glow">
+            <div class="spinner-ring ring-1"></div>
+            <div class="spinner-ring ring-2"></div>
+            <div class="spinner-ring ring-3"></div>
+            <span class="spinner-ai-core">✨</span>
+          </div>
+          
+          <h3 class="generation-loading-title">Generating 3 AI Captions...</h3>
+          <p id="generationStepText" class="generation-loading-step">Analyzing photo/video frames and crafting viral hooks...</p>
+          
+          <div class="generation-steps-list">
+            <div id="stepItem1" class="gen-step-item active">
+              <span class="step-dot"></span>
+              <span>1. Analyzing media visuals &amp; audience context</span>
+            </div>
+            <div id="stepItem2" class="gen-step-item">
+              <span class="step-dot"></span>
+              <span>2. Generating 3 custom angles with Claude Haiku AI</span>
+            </div>
+            <div id="stepItem3" class="gen-step-item">
+              <span class="step-dot"></span>
+              <span>3. Calculating token cost &amp; preparing Next Page</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p>Built for College Full-Stack Development &amp; Social Media AI • Powered by Node.js, Express &amp; Claude</p>
+        <button type="button" id="footerMobileBtn" class="footer-connect-btn">
+          📱 Connect Mobile / Lab Computers (LAN Wi-Fi)
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Mobile & Lab Network Connectivity Modal -->
+  <div id="mobileConnectModal" class="modal-overlay" style="display: none;" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="mobileModalTitle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">📱</span>
+          <div>
+            <h3 id="mobileModalTitle" class="modal-title">Use on Any Mobile &amp; Lab Computer</h3>
+            <p class="modal-subtitle">Connect any phone or computer on the same Wi-Fi / Local Network</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseMobileModal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- QR Code & Quick Scan -->
+        <div class="qr-scan-card">
+          <div class="qr-wrapper">
+            <img id="networkQrImg" alt="QR Code for Mobile Access" class="qr-code-img" src="">
+            <div id="qrLoadingSpinner" class="qr-loading-spinner" style="display: none;"></div>
+          </div>
+          <div class="qr-info">
+            <span class="qr-badge">Instant Mobile Camera Scan</span>
+            <p class="qr-instructions">Open your phone's camera to scan and immediately open the app on your mobile screen!</p>
+          </div>
+        </div>
+
+        <!-- Network Address Cards -->
+        <div class="connection-links-group">
+          <div class="conn-item">
+            <div class="conn-label-row">
+              <span class="conn-type-badge">📶 Wi-Fi / Mobile &amp; Lab URL</span>
+              <span class="conn-hint">Open on phone browser or share with lab mates</span>
+            </div>
+            <div class="conn-input-row">
+              <input type="text" id="networkUrlInput" readonly class="conn-input" value="Fetching LAN IP...">
+              <button type="button" id="btnCopyNetworkUrl" class="btn-copy-url" title="Copy network URL">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="conn-item">
+            <div class="conn-label-row">
+              <span class="conn-type-badge conn-type-local">💻 Local PC URL</span>
+              <span class="conn-hint">For this computer</span>
+            </div>
+            <div class="conn-input-row">
+              <input type="text" id="localUrlInput" readonly class="conn-input" value="http://localhost:3000">
+              <button type="button" id="btnCopyLocalUrl" class="btn-copy-url" title="Copy local URL">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-tips">
+          <p>💡 <strong>Lab / Wi-Fi Requirement:</strong> Your mobile phone and laptop or lab computer must be on the same Wi-Fi network or mobile hotspot. The server runs on <code>0.0.0.0</code> for seamless multi-device access.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Interactive Background & Main Logic Scripts -->
+  <script src="bg3d.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
