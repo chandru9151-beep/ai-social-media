@@ -44,7 +44,7 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.use(express.static(path.join(__dirname, 'public'))); // Serve frontend static files
+app.use(express.static(__dirname)); // Serve frontend static files
 
 // Allowed image MIME types for Claude Vision
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
